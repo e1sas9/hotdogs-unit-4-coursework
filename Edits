@@ -77,4 +77,131 @@ def binary_search(items, target):
 
     return -1
 
+# SORT FUNCTIONS
+
+
+def bubble_sort(arr):
+    arr = arr.copy()
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    return arr
+
+
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+
+    return quick_sort(left) + middle + quick_sort(right)
+
+
+
+# MENU SYSTEM
+
+
+def display_menu():
+    print("\n--- MAIN MENU ---")
+    print("1. View data")
+    print("2. Bubble sort")
+    print("3. Quick sort")
+    print("4. Linear search (unsorted)")
+    print("5. Linear search (sorted)")
+    print("6. Binary search")
+    print("7. Compare search times")
+    print("8. Compare sort times")
+    print("9. Generate analysis")
+    print("10. Save analysis")
+    print("0. Exit")
+
+
+def menu():
+    while True:
+        display_menu()
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            for record in hotdog_data:
+                print(record)
+
+        elif choice == "2":
+            print("Bubble Sorted:", bubble_sort(names))
+
+        elif choice == "3":
+            print("Quick Sorted:", quick_sort(names))
+
+        elif choice == "4":
+            target = input("Enter Vendor ID: ")
+            print("Result:", linear_search(names, target))
+
+        elif choice == "5":
+            sorted_names = bubble_sort(names)
+            target = input("Enter Vendor ID: ")
+            print("Result:", linear_search(sorted_names, target))
+
+        elif choice == "6":
+            sorted_names = bubble_sort(names)
+            target = input("Enter Vendor ID: ")
+            print("Result:", binary_search(sorted_names, target))
+
+        elif choice == "7":
+            target = names[0]
+
+            start = time.time()
+            linear_search(names, target)
+            linear_time = time.time() - start
+
+            sorted_names = bubble_sort(names)
+
+            start = time.time()
+            binary_search(sorted_names, target)
+            binary_time = time.time() - start
+
+            print("Linear:", linear_time)
+            print("Binary:", binary_time)
+
+        elif choice == "8":
+            start = time.time()
+            bubble_sort(names)
+            bubble_time = time.time() - start
+
+            start = time.time()
+            quick_sort(names)
+            quick_time = time.time() - start
+
+            print("Bubble:", bubble_time)
+            print("Quick:", quick_time)
+
+        elif choice == "9":
+            total_vegan = sum(item["vegan"] for item in hotdog_data)
+            total_meat = sum(item["meat"] for item in hotdog_data)
+
+            print("Total Vegan:", total_vegan)
+            print("Total Meat:", total_meat)
+
+        elif choice == "10":
+            with open("results.txt", "w") as f:
+                f.write("Analysis saved\n")
+            print("Saved to results.txt")
+
+        elif choice == "0":
+            print("Goodbye")
+            break
+
+        else:
+            print("Invalid choice")
+
+
+
+# RUN PROGRAM
+
+
+menu()
+
 
