@@ -20,41 +20,49 @@ with open("HotDogs.txt", "w") as my_file:
 
 
 
-# FILE READING (DICTIONARIES)
+import time
+
+# -----------------------------
+# FEATURE 1: READ FILE DATA
+# -----------------------------
+
+def load_data(filename):
+    """Reads hotdog data from a file and returns a list of dictionaries."""
+    data = []
+
+    try:
+        with open(filename, "r") as file:
+            for line in file:
+                parts = line.strip().split(",")
+
+                if len(parts) != 7:
+                    continue  # skip invalid lines
+
+                record = {
+                    "vendor_id": parts[0],
+                    "vendor_name": parts[1],
+                    "year_week": parts[2],
+                    "vegan": int(parts[3]),
+                    "meat": int(parts[4]),
+                    "onions_kg": float(parts[5]),
+                    "ketchup_l": int(parts[6])
+                }
+
+                data.append(record)
+
+    except FileNotFoundError:
+        print("Error: File not found.")
+        return []
+
+    return data
 
 
-hotdog_data = []
-
-try:
-    with open("hotdogs.txt", "r") as file:
-        for line in file:
-            parts = line.strip().split(",")
-
-            record = {
-                "vendor_id": parts[0],
-                "vendor_name": parts[1],
-                "year_week": parts[2],
-                "vegan": int(parts[3]),
-                "meat": int(parts[4]),
-                "onions_kg": float(parts[5]),
-                "ketchup_l": int(parts[6])
-            }
-
-            hotdog_data.append(record)
-
-except FileNotFoundError:
-    print("Error: hotdogs.txt not found.")
-    exit()
-
-
-# CREATE LIST FOR SEARCHING
-
-
-names = [item["vendor_id"] for item in hotdog_data]
-
-# SEARCH FUNCTIONS
+# -----------------------------
+# FEATURE 2: SEARCHING
+# -----------------------------
 
 def linear_search(items, target):
+    """Search list linearly."""
     for i in range(len(items)):
         if items[i] == target:
             return i
@@ -62,39 +70,47 @@ def linear_search(items, target):
 
 
 def binary_search(items, target):
-    first = 0
-    last = len(items) - 1
+    """Binary search (requires sorted list)."""
+    low = 0
+    high = len(items) - 1
 
-    while first <= last:
-        midpoint = (first + last) // 2
+    while low <= high:
+        mid = (low + high) // 2
 
-        if items[midpoint] == target:
-            return midpoint
-        elif items[midpoint] < target:
-            first = midpoint + 1
+        if items[mid] == target:
+            return mid
+        elif items[mid] < target:
+            low = mid + 1
         else:
-            last = midpoint - 1
+            high = mid - 1
 
     return -1
 
-# SORT FUNCTIONS
 
+# -----------------------------
+# FEATURE 3: SORTING
+# -----------------------------
 
 def bubble_sort(arr):
+    """Bubble sort algorithm."""
     arr = arr.copy()
     n = len(arr)
+
     for i in range(n):
         for j in range(0, n - i - 1):
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
+
     return arr
 
 
 def quick_sort(arr):
+    """Quick sort algorithm."""
     if len(arr) <= 1:
         return arr
 
     pivot = arr[len(arr) // 2]
+
     left = [x for x in arr if x < pivot]
     middle = [x for x in arr if x == pivot]
     right = [x for x in arr if x > pivot]
@@ -102,9 +118,60 @@ def quick_sort(arr):
     return quick_sort(left) + middle + quick_sort(right)
 
 
+# -----------------------------
+# FEATURE 4: ANALYSIS
+# -----------------------------
 
-# MENU SYSTEM
+def analyse_data(data):
+    """Generate simple analysis."""
+    total_vegan = sum(item["vegan"] for item in data)
+    total_meat = sum(item["meat"] for item in data)
 
+    result = f"Total Vegan Sold: {total_vegan}\nTotal Meat Sold: {total_meat}"
+    return result
+
+
+def save_analysis(text, filename="results.txt"):
+    """Save analysis to file."""
+    with open(filename, "w") as file:
+        file.write(text)
+
+
+# -----------------------------
+# FEATURE 5: TIMING
+# -----------------------------
+
+def compare_search_times(names):
+    target = names[0]
+
+    start = time.time()
+    linear_search(names, target)
+    linear_time = time.time() - start
+
+    sorted_names = bubble_sort(names)
+
+    start = time.time()
+    binary_search(sorted_names, target)
+    binary_time = time.time() - start
+
+    return linear_time, binary_time
+
+
+def compare_sort_times(names):
+    start = time.time()
+    bubble_sort(names)
+    bubble_time = time.time() - start
+
+    start = time.time()
+    quick_sort(names)
+    quick_time = time.time() - start
+
+    return bubble_time, quick_time
+
+
+# -----------------------------
+# FEATURE 6: MENU SYSTEM
+# -----------------------------
 
 def display_menu():
     print("\n--- MAIN MENU ---")
@@ -121,87 +188,78 @@ def display_menu():
     print("0. Exit")
 
 
-def menu():
+def get_vendor_ids(data):
+    return [item["vendor_id"] for item in data]
+
+
+def menu(data):
+    names = get_vendor_ids(data)
+    last_analysis = ""
+
     while True:
         display_menu()
         choice = input("Enter choice: ")
 
         if choice == "1":
-            for record in hotdog_data:
+            for record in data:
                 print(record)
 
         elif choice == "2":
-            print("Bubble Sorted:", bubble_sort(names))
+            print(bubble_sort(names))
 
         elif choice == "3":
-            print("Quick Sorted:", quick_sort(names))
+            print(quick_sort(names))
 
-        elif choice == "4":
-            target = input("Enter Vendor ID: ")
-            print("Result:", linear_search(names, target))
+        elif choice in ["4", "5", "6"]:
+            target = input("Enter Vendor ID: ").strip()
 
-        elif choice == "5":
-            sorted_names = bubble_sort(names)
-            target = input("Enter Vendor ID: ")
-            print("Result:", linear_search(sorted_names, target))
+            if choice == "4":
+                print("Result:", linear_search(names, target))
 
-        elif choice == "6":
-            sorted_names = bubble_sort(names)
-            target = input("Enter Vendor ID: ")
-            print("Result:", binary_search(sorted_names, target))
+            elif choice == "5":
+                sorted_names = bubble_sort(names)
+                print("Result:", linear_search(sorted_names, target))
+
+            elif choice == "6":
+                sorted_names = bubble_sort(names)
+                print("Result:", binary_search(sorted_names, target))
 
         elif choice == "7":
-            target = names[0]
-
-            start = time.time()
-            linear_search(names, target)
-            linear_time = time.time() - start
-
-            sorted_names = bubble_sort(names)
-
-            start = time.time()
-            binary_search(sorted_names, target)
-            binary_time = time.time() - start
-
+            linear_time, binary_time = compare_search_times(names)
             print("Linear:", linear_time)
             print("Binary:", binary_time)
 
         elif choice == "8":
-            start = time.time()
-            bubble_sort(names)
-            bubble_time = time.time() - start
-
-            start = time.time()
-            quick_sort(names)
-            quick_time = time.time() - start
-
+            bubble_time, quick_time = compare_sort_times(names)
             print("Bubble:", bubble_time)
             print("Quick:", quick_time)
 
         elif choice == "9":
-            total_vegan = sum(item["vegan"] for item in hotdog_data)
-            total_meat = sum(item["meat"] for item in hotdog_data)
-
-            print("Total Vegan:", total_vegan)
-            print("Total Meat:", total_meat)
+            last_analysis = analyse_data(data)
+            print(last_analysis)
 
         elif choice == "10":
-            with open("results.txt", "w") as f:
-                f.write("Analysis saved\n")
-            print("Saved to results.txt")
+            if last_analysis:
+                save_analysis(last_analysis)
+                print("Saved successfully.")
+            else:
+                print("No analysis to save.")
 
         elif choice == "0":
             print("Goodbye")
             break
 
         else:
-            print("Invalid choice")
+            print("Invalid input. Try again.")
 
 
+# -----------------------------
+# MAIN PROGRAM
+# -----------------------------
 
-# RUN PROGRAM
+hotdog_data = load_data("HotDogs.txt")
 
-
-menu()
-
-
+if hotdog_data:
+    menu(hotdog_data)
+else:
+    print("Program stopped due to missing data.")
