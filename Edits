@@ -24,140 +24,114 @@ KK_745,Korner Kart,202318,90,170,25.0,1
 KK_745,Korner Kart,202319,80,150,20.5,3
 KK_745,Korner Kart,202320,90,180,25.0,4""")
 
-
 # -----------------------------
 # FEATURE 1: READ FILE DATA
 # -----------------------------
 
 def load_data(filename):
     data = []
-
     try:
         with open(filename, "r") as file:
             for line in file:
                 parts = line.strip().split(",")
-
-                if len(parts) != 7:
-                    continue
-
-                record = {
-                    "vendor_id": parts[0],
-                    "vendor_name": parts[1],
-                    "year_week": parts[2],
-                    "vegan": int(parts[3]),
-                    "meat": int(parts[4]),
-                    "onions_kg": float(parts[5]),
-                    "ketchup_l": int(parts[6])
-                }
-
-                data.append(record)
-
+                if len(parts) == 7:
+                    record = {
+                        "vendor_id": parts[0],
+                        "vendor_name": parts[1],
+                        "year_week": parts[2],
+                        "vegan": int(parts[3]),
+                        "meat": int(parts[4]),
+                        "onions_kg": float(parts[5]),
+                        "ketchup_l": float(parts[6])
+                    }
+                    data.append(record)
     except FileNotFoundError:
         print("Error: File not found.")
-        return []
-
     return data
 
-
 # -----------------------------
-# FEATURE 2: SEARCHING
+# FEATURE 2: SEARCHING ALGORITHMS
 # -----------------------------
 
 def linear_search(items, target):
-    """Search list linearly."""
+    """Checks every item one by one."""
     for i in range(len(items)):
-        if items[i] == target:
+        if items[i].lower() == target.lower():
             return i
     return -1
 
-
 def binary_search(items, target):
-    """Binary search (requires sorted list)."""
+    """Splits the list in half repeatedly (requires sorted list)."""
     low = 0
     high = len(items) - 1
+    target = target.lower()
 
     while low <= high:
         mid = (low + high) // 2
+        mid_val = items[mid].lower()
 
-        if items[mid] == target:
+        if mid_val == target:
             return mid
-        elif items[mid] < target:
+        elif mid_val < target:
             low = mid + 1
         else:
             high = mid - 1
-
     return -1
 
-
 # -----------------------------
-# FEATURE 3: SORTING
+# FEATURE 3: SORTING ALGORITHMS
 # -----------------------------
 
 def bubble_sort(arr):
-    """Bubble sort algorithm."""
     arr = arr.copy()
     n = len(arr)
-
     for i in range(n):
         for j in range(0, n - i - 1):
-            if arr[j] > arr[j + 1]:
+            if arr[j].lower() > arr[j + 1].lower():
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
-
     return arr
 
-
 def quick_sort(arr):
-    """Quick sort algorithm."""
     if len(arr) <= 1:
         return arr
-
     pivot = arr[len(arr) // 2]
-
-    left = [x for x in arr if x < pivot]
-    middle = [x for x in arr if x == pivot]
-    right = [x for x in arr if x > pivot]
-
+    left = [x for x in arr if x.lower() < pivot.lower()]
+    middle = [x for x in arr if x.lower() == pivot.lower()]
+    right = [x for x in arr if x.lower() > pivot.lower()]
     return quick_sort(left) + middle + quick_sort(right)
-
 
 # -----------------------------
 # FEATURE 4: ANALYSIS
 # -----------------------------
 
 def analyse_data(data):
-    """Generate simple analysis."""
     total_vegan = sum(item["vegan"] for item in data)
     total_meat = sum(item["meat"] for item in data)
-
-    result = f"Total Vegan Sold: {total_vegan}\nTotal Meat Sold: {total_meat}"
-    return result
-
+    return f"Total Vegan Sold: {total_vegan}\nTotal Meat Sold: {total_meat}"
 
 def save_analysis(text, filename="results.txt"):
-    """Save analysis to file."""
     with open(filename, "w") as file:
         file.write(text)
-
 
 # -----------------------------
 # FEATURE 5: TIMING
 # -----------------------------
 
 def compare_search_times(names):
-    target = names[0]
-
+    target = names[-1] 
+    
+    # Time Linear
     start = time.time()
     linear_search(names, target)
     linear_time = time.time() - start
 
-    sorted_names = bubble_sort(names)
-
+    # Time Binary (including the necessary sort)
     start = time.time()
+    sorted_names = quick_sort(names)
     binary_search(sorted_names, target)
     binary_time = time.time() - start
 
     return linear_time, binary_time
-
 
 def compare_sort_times(names):
     start = time.time()
@@ -170,7 +144,6 @@ def compare_sort_times(names):
 
     return bubble_time, quick_time
 
-
 # -----------------------------
 # FEATURE 6: MENU SYSTEM
 # -----------------------------
@@ -178,24 +151,22 @@ def compare_sort_times(names):
 def display_menu():
     print("\n--- MAIN MENU ---")
     print("1. View data")
-    print("2. Bubble sort")
-    print("3. Quick sort")
-    print("4. Linear search (unsorted)")
-    print("5. Linear search (sorted)")
-    print("6. Binary search")
+    print("2. Bubble sort (Names)")
+    print("3. Quick sort (Names)")
+    print("4. Linear search (Unsorted list)")
+    print("5. Linear search (Sorted list)")
+    print("6. Binary search (Sorted list)")
     print("7. Compare search times")
     print("8. Compare sort times")
     print("9. Generate analysis")
     print("10. Save analysis")
     print("0. Exit")
 
-
-def get_vendor_ids(data):
-    return [item["vendor_id"] for item in data]
-
+def get_vendor_names(data):
+    return [item["vendor_name"] for item in data]
 
 def menu(data):
-    names = get_vendor_ids(data)
+    names = get_vendor_names(data)
     last_analysis = ""
 
     while True:
@@ -207,34 +178,37 @@ def menu(data):
                 print(record)
 
         elif choice == "2":
-            print(bubble_sort(names))
+            print("Bubble Sorted Names:", bubble_sort(names))
 
         elif choice == "3":
-            print(quick_sort(names))
+            print("Quick Sorted Names:", quick_sort(names))
 
-        elif choice in ["4", "5", "6"]:
-            target = input("Enter Vendor ID: ").strip()
+        elif choice == "4":
+            target = input("Enter Vendor Name to find (Unsorted Linear): ").strip()
+            result = linear_search(names, target)
+            print(f"Linear Search found '{target}' at index {result}")
 
-            if choice == "4":
-                print("Result:", linear_search(names, target))
+        elif choice == "5":
+            target = input("Enter Vendor Name to find (Sorted Linear): ").strip()
+            sorted_names = quick_sort(names)
+            result = linear_search(sorted_names, target)
+            print(f"Sorted Linear Search found '{target}' at index {result}")
 
-            elif choice == "5":
-                sorted_names = bubble_sort(names)
-                print("Result:", linear_search(sorted_names, target))
-
-            elif choice == "6":
-                sorted_names = bubble_sort(names)
-                print("Result:", binary_search(sorted_names, target))
+        elif choice == "6":
+            target = input("Enter Vendor Name to find (Binary Search): ").strip()
+            sorted_names = quick_sort(names)
+            result = binary_search(sorted_names, target)
+            print(f"Binary Search found '{target}' at index {result}")
 
         elif choice == "7":
-            linear_time, binary_time = compare_search_times(names)
-            print("Linear:", linear_time)
-            print("Binary:", binary_time)
+            l_time, b_time = compare_search_times(names)
+            print(f"Linear Time: {l_time:.10f}s")
+            print(f"Binary Time: {b_time:.10f}s (includes sorting)")
 
         elif choice == "8":
-            bubble_time, quick_time = compare_sort_times(names)
-            print("Bubble:", bubble_time)
-            print("Quick:", quick_time)
+            b_time, q_time = compare_sort_times(names)
+            print(f"Bubble Sort Time: {b_time:.10f}s")
+            print(f"Quick Sort Time:  {q_time:.10f}s")
 
         elif choice == "9":
             last_analysis = analyse_data(data)
@@ -243,25 +217,24 @@ def menu(data):
         elif choice == "10":
             if last_analysis:
                 save_analysis(last_analysis)
-                print("Saved successfully.")
+                print("Saved results.txt")
             else:
-                print("No analysis to save.")
+                print("Generate analysis (Option 9) first!")
 
         elif choice == "0":
-            print("Goodbye")
+            print("Goodbye!")
             break
-
         else:
-            print("Invalid input. Try again.")
-
+            print("Invalid choice.")
 
 # -----------------------------
 # MAIN PROGRAM
 # -----------------------------
 
+create_data_file()
 hotdog_data = load_data("HotDogs.txt")
 
 if hotdog_data:
     menu(hotdog_data)
 else:
-    print("Program stopped due to missing data.")
+    print("Program failed to load data.")
